@@ -412,49 +412,41 @@ import QuartzCore
                 }) {
                     guard sawFadeIn else { finish(["ok": false, "error": "bubble entrance had no intermediate opacity"]); return }
                     checks.append("bubble entrance has real intermediate Core Animation opacity")
-                    var fadeSamples: [JSONObject] = []
-                    let fadeStart = CACurrentMediaTime()
+                    // Sample the complete transition. With Reduce Motion the
+                    // 100ms fade can finish before one delayed midpoint probe.
+                    var sawCrossfade = false
                     let fadeProbe = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in MainActor.assumeIsolated {
-                        fadeSamples.append(["ms": Int((CACurrentMediaTime() - fadeStart) * 1000),
-                            "transitioning": self.bubble.isTransitioning, "opacity": Double(self.bubble.outgoingOpacity ?? -1)])
+                        if let opacity = self.bubble.outgoingOpacity, opacity > 0.02 && opacity < 0.98 { sawCrossfade = true }
                     } }
                     self.pet.click?()
-                    waitFor(100, condition: { self.bubble.isTransitioning }) {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + self.bubble.textDuration / 2) {
-                            fadeProbe.invalidate()
-                            guard let opacity = self.bubble.outgoingOpacity, opacity > 0.02 && opacity < 0.98 else {
-                                finish(["ok": false, "error": "text switch is not crossfading", "debug": "DEBUG-native-fade",
-                                    "samples": fadeSamples, "duration": self.bubble.textDuration,
-                                    "reduceMotion": NSWorkspace.shared.accessibilityDisplayShouldReduceMotion]); return
-                            }
-                            waitFor(100, condition: { !self.bubble.isTransitioning }) {
-                                let previous = self.bubble.value["amount"] as? String
-                                capture(self.bubble, "native-message.png")
-                                self.pet.click?()
-                                waitFor(100, condition: { !self.bubble.isTransitioning && self.bubble.value["amount"] as? String != previous }) {
-                                    guard self.bubble.value["kind"] as? String == "message" else { finish(["ok": false, "error": "pet refresh returned to money"]); return }
-                                    checks.append("pet first click shows balance, later clicks crossfade and refresh messages without returning to money")
-                                    self.bubble.clicked?()
-                                    waitFor(100, condition: { self.bubble.image.imageValid && !self.bubble.image.isHidden && !self.bubble.isTransitioning }) {
-                                        capture(self.bubble, "native-message-image.png")
-                                        var sawFadeOut = false
-                                        self.bubble.clicked?()
-                                        waitFor(100, condition: {
-                                            let opacity = self.bubble.visibleOpacity
-                                            if self.bubbleClosing && opacity > 0.02 && opacity < 0.98 { sawFadeOut = true }
-                                            return !self.bubblePanel.isVisible && !self.bubble.image.imageValid
-                                        }) {
-                                            guard sawFadeOut else { finish(["ok": false, "error": "bubble exit had no intermediate opacity"]); return }
-                                            checks.append("real JSONL saved sequence: quota → original message → animated petpet → fade out and release image")
-                                            verifyRapidReopen()
-                                        }
-                                    }
+                    waitFor(100, condition: { self.bubble.value["kind"] as? String == "message" && !self.bubble.isTransitioning }) {
+                        fadeProbe.invalidate()
+                        guard sawCrossfade else { finish(["ok": false, "error": "text switch had no intermediate opacity"]); return }
+                        let previous = self.bubble.value["amount"] as? String
+                        capture(self.bubble, "native-message.png")
+                        self.pet.click?()
+                        waitFor(100, condition: { !self.bubble.isTransitioning && self.bubble.value["amount"] as? String != previous }) {
+                            guard self.bubble.value["kind"] as? String == "message" else { finish(["ok": false, "error": "pet refresh returned to money"]); return }
+                            checks.append("pet first click shows balance, later clicks crossfade and refresh messages without returning to money")
+                            self.bubble.clicked?()
+                            waitFor(100, condition: { self.bubble.image.imageValid && !self.bubble.image.isHidden && !self.bubble.isTransitioning }) {
+                                capture(self.bubble, "native-message-image.png")
+                                var sawFadeOut = false
+                                self.bubble.clicked?()
+                                waitFor(100, condition: {
+                                    let opacity = self.bubble.visibleOpacity
+                                    if self.bubbleClosing && opacity > 0.02 && opacity < 0.98 { sawFadeOut = true }
+                                    return !self.bubblePanel.isVisible && !self.bubble.image.imageValid
+                                }) {
+                                    guard sawFadeOut else { finish(["ok": false, "error": "bubble exit had no intermediate opacity"]); return }
+                                    checks.append("real JSONL saved sequence: quota → original message → animated petpet → fade out and release image")
+                                    verifyRapidReopen()
                                 }
                             }
                         }
-                    }
-                }
             }
+        }
+    }
             @MainActor func verifyRapidReopen() {
                 self.pet.click?()
                 waitFor(100, condition: { self.bubblePanel.isVisible && self.bubble.visibleOpacity >= 0.99 }) {
