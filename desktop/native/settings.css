@@ -1,0 +1,10 @@
+/* Reuse ui.css's real dashboard, segmented modes, tabs, metrics and groups. */
+html.desktop,html.desktop body{height:100%;background:#fff!important;overflow:hidden!important;color:#293752;font:13px/1.6 'Segoe UI','Microsoft YaHei',sans-serif}
+html.desktop .native-settings.whale-dashboard{position:relative;left:auto;top:auto;right:auto;bottom:auto;width:100%!important;height:100vh!important;max-width:none!important;max-height:none!important;opacity:1;pointer-events:auto;border:0;border-radius:0;box-shadow:none;transform:none!important;padding:18px 20px}
+.native-settings .whale-dashboard-scroll{padding-right:2px}
+.native-settings .whale-menu-group>.dshwv-menu-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0}
+.native-settings .dshwv-menu-row input[type=number]{width:82px;padding:5px 7px;font-size:12px}
+.native-settings .dshwv-menu-row select{width:148px;padding:5px 7px;font-size:12px}
+.native-settings .whale-menu-group>button{border:1px solid #dce3ef;border-radius:7px;background:#f7f9fd;color:#465a86;font-size:12px;padding:7px 10px;margin:6px 8px 6px 0}
+.native-settings .native-save-status{color:#618b83;font-size:11px;margin:0}
+.native-settings .native-save-status:empty{display:none}
