@@ -4,6 +4,8 @@ macOS 原生小鲸鱼桌面伴侣：查看 API 余额或 Codex 订阅的 5 小�
 
 这是从 [MeteorNOX/DeepSeek-Balance-Whale-Widget](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) 的 macOS 维护分支独立整理的原生预览版，不是上游官方发行版。代码保留上游版权；素材许可与代码分开，见 [来源说明](PROVENANCE.md)。
 
+应用占用和运行开销理论上运低于官方。
+
 ## 下载与运行
 
 到 [Releases](https://github.com/Roelatriper/whale-native/releases) 下载 `whale-native-0.1.0-preview.1-macos-arm64.zip`，解压后将 `whale-native.app` 拖进“应用程序”，打开即可。运行包已包含 Node，不需要 Homebrew、npm 或原项目源码。
