@@ -414,10 +414,10 @@ import QuartzCore
                     checks.append("bubble entrance has real intermediate Core Animation opacity")
                     var fadeSamples: [JSONObject] = []
                     let fadeStart = CACurrentMediaTime()
-                    let fadeProbe = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
+                    let fadeProbe = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in MainActor.assumeIsolated {
                         fadeSamples.append(["ms": Int((CACurrentMediaTime() - fadeStart) * 1000),
-                            "transitioning": self.bubble.isTransitioning, "opacity": self.bubble.outgoingOpacity as Any? ?? NSNull()])
-                    }
+                            "transitioning": self.bubble.isTransitioning, "opacity": Double(self.bubble.outgoingOpacity ?? -1)])
+                    } }
                     self.pet.click?()
                     waitFor(100, condition: { self.bubble.isTransitioning }) {
                         DispatchQueue.main.asyncAfter(deadline: .now() + self.bubble.textDuration / 2) {
