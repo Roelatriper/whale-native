@@ -412,10 +412,21 @@ import QuartzCore
                 }) {
                     guard sawFadeIn else { finish(["ok": false, "error": "bubble entrance had no intermediate opacity"]); return }
                     checks.append("bubble entrance has real intermediate Core Animation opacity")
+                    var fadeSamples: [JSONObject] = []
+                    let fadeStart = CACurrentMediaTime()
+                    let fadeProbe = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { _ in
+                        fadeSamples.append(["ms": Int((CACurrentMediaTime() - fadeStart) * 1000),
+                            "transitioning": self.bubble.isTransitioning, "opacity": self.bubble.outgoingOpacity as Any? ?? NSNull()])
+                    }
                     self.pet.click?()
                     waitFor(100, condition: { self.bubble.isTransitioning }) {
                         DispatchQueue.main.asyncAfter(deadline: .now() + self.bubble.textDuration / 2) {
-                            guard let opacity = self.bubble.outgoingOpacity, opacity > 0.02 && opacity < 0.98 else { finish(["ok": false, "error": "text switch is not crossfading"]); return }
+                            fadeProbe.invalidate()
+                            guard let opacity = self.bubble.outgoingOpacity, opacity > 0.02 && opacity < 0.98 else {
+                                finish(["ok": false, "error": "text switch is not crossfading", "debug": "DEBUG-native-fade",
+                                    "samples": fadeSamples, "duration": self.bubble.textDuration,
+                                    "reduceMotion": NSWorkspace.shared.accessibilityDisplayShouldReduceMotion]); return
+                            }
                             waitFor(100, condition: { !self.bubble.isTransitioning }) {
                                 let previous = self.bubble.value["amount"] as? String
                                 capture(self.bubble, "native-message.png")
