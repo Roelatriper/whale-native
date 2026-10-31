@@ -141,7 +141,10 @@ final class BubbleView: NSView {
     }
     private func attributed(_ row: JSONObject, factor: Double) -> NSAttributedString {
         let text = row["text"] as? String ?? ""
-        var font = NSFont.systemFont(ofSize: max(1, (row["size"] as? Double ?? 66) * bounds.width / 1026 * factor), weight: row["bold"] as? Bool == true ? .bold : .regular)
+        // Keep arithmetic in Double until the AppKit boundary. Older Swift
+        // toolchains cannot infer mixed Double/CGFloat multiplication/division.
+        let fontSize = CGFloat(max(1.0, (row["size"] as? Double ?? 66) * Double(bounds.width) / 1026.0 * factor))
+        var font = NSFont.systemFont(ofSize: fontSize, weight: row["bold"] as? Bool == true ? .bold : .regular)
         if row["italic"] as? Bool == true { font = NSFontManager.shared.convert(font, toHaveTrait: .italicFontMask) }
         let paragraph = NSMutableParagraphStyle(); paragraph.alignment = .center; paragraph.lineBreakMode = .byCharWrapping
         let result = NSMutableAttributedString(string: text, attributes: [.font: font, .foregroundColor: Self.color(row["color"] as? String ?? "#536ba9"), .paragraphStyle: paragraph,

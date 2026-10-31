@@ -19,6 +19,7 @@
 - 自包含发行包：Node 24.22.2；无非系统动态链接依赖，保留官方 Node 签名；外层 app ad-hoc 签名严格验证通过。
 - 解压至带空格的新目录、限制 PATH 且不传 --root / --node：16 项真实 AppKit / WK 检查全部通过；退出清理锁及 runtime 文件。
 - 未覆盖 /Applications 或停止原项目正式实例。CI 结果以 GitHub Actions 实际记录为准，本地通过不等于 CI 已通过。
+- 初次远端构建发现气泡字号表达式在旧 Swift 中 Double / CGFloat 推断歧义；显式使用 Double 计算并在 AppKit 边界转换为 CGFloat，避免依赖新编译器推断。远端实际编译及移动路径 smoke 是此兼容问题的回归入口，不以源码字符串检查代替。
 
 旧仓库 521 项测试或旧 Node 26 的整组内存样本不计作本库发行包结果。
 
