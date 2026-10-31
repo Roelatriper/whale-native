@@ -444,9 +444,9 @@ import QuartzCore
                                 }
                             }
                         }
+                    }
+                }
             }
-        }
-    }
             @MainActor func verifyRapidReopen() {
                 self.pet.click?()
                 waitFor(100, condition: { self.bubblePanel.isVisible && self.bubble.visibleOpacity >= 0.99 }) {
